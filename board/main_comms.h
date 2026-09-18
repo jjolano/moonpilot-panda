@@ -22,6 +22,7 @@ static int get_health_pkt(void *dat) {
   health->flags_pkt |= heartbeat_lost ? HEALTH_FLAG_HEARTBEAT_LOST : 0U;
   health->flags_pkt |= safety_rx_checks_invalid ? HEALTH_FLAG_SAFETY_RX_CHECKS_INVALID : 0U;
   health->flags_pkt |= bootkick_reset_triggered ? HEALTH_FLAG_SOM_RESET_TRIGGERED : 0U;
+  health->flags_pkt |= controls_allowed_lateral ? HEALTH_FLAG_CONTROLS_ALLOWED_LATERAL : 0U;  // moonpilot seam, see AGENTS.md
 
   health->safety_tx_blocked_pkt = safety_tx_blocked;
   health->safety_rx_invalid_pkt = safety_rx_invalid;
