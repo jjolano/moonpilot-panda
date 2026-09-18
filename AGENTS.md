@@ -20,5 +20,6 @@ One thing: `HEALTH_FLAG_CONTROLS_ALLOWED_LATERAL` in `board/health.h`, published
 ## Gates
 
 - `scons` builds the firmware; so does the superproject's `tools/op.sh build`. A change here changes the signed firmware, which is how openpilot knows to reflash the panda — `pandad.py` flashes when the panda's signature differs from the built one.
-- `ruff check .` and `python -m unittest discover -s tests` are panda's own gate (`./test.sh`).
+- **`./test.sh` cannot build this fork's firmware on its own.** Its `setup.sh` installs `opendbc @ git+https://github.com/commaai/opendbc.git@master` (`pyproject.toml`), which is *upstream* opendbc and has no `opendbc/safety/moonpilot/`, so panda's standalone `scons` fails with `'controls_allowed_lateral' undeclared` in `board/main_comms.h` before any test runs. That is the fork's dependency, not a defect in the docs: build and test from the superproject, or point the standalone run at the fork — `PYTHONPATH=../opendbc_repo .venv/bin/python -m unittest discover -s tests`. Do not "fix" it by repointing panda's `pyproject.toml` at the fork: that line is upstream's, and the superproject already puts `opendbc_repo` on the include path where it belongs.
+- `ruff check .` and `python -m unittest discover -s tests` are the rest of panda's own gate (`./test.sh`).
 - C changes have to build for the board they ship on, not only for the host.
