@@ -49,7 +49,11 @@ void set_gpio_output_type(GPIO_TypeDef *GPIO, unsigned int pin, unsigned int out
 void set_gpio_alternate(GPIO_TypeDef *GPIO, unsigned int pin, unsigned int mode) {
   ENTER_CRITICAL();
   uint32_t tmp = GPIO->AFR[pin >> 3U];
-  tmp &= ~(0xFU << ((pin & 7U) * 4U));
+  // moonpilot seam, see AGENTS.md: the mask literal cast to the width it is shifted within. MISRA
+  // 12.2 reads `0xFU`'s essential type as 8 bits and the shift can reach 28, which cppcheck reports
+  // or not depending on what else is in the translation unit; the cast makes the operand's width
+  // the one the shift actually uses. Same value, same result.
+  tmp &= ~((uint32_t)0xFU << ((pin & 7U) * 4U));
   tmp |= mode << ((pin & 7U) * 4U);
   register_set(&(GPIO->AFR[pin >> 3]), tmp, 0xFFFFFFFFU);
   set_gpio_mode(GPIO, pin, MODE_ALTERNATE);

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import glob
+import sys
 import unittest
 import shutil
 import subprocess
@@ -82,7 +83,22 @@ def run_mutation(fn, patch, should_fail):
       with open(fpath, "w") as f:
         f.write(content)
 
-    return subprocess.run("SKIP_TABLES_DIFF=1 panda/tests/misra/test_misra.sh", cwd=tmp, shell=True,
+    # moonpilot seam, see AGENTS.md: two things the child needs and this environment does not hand it.
+    #
+    # The interpreter: `test_misra.sh` calls bare `python3` for opendbc's include path and for comma's
+    # cppcheck, and the copy it runs in excludes `.venv`, so that name resolves against PATH. With the
+    # venv activated it is this interpreter, which is how CI runs this; invoked as plain
+    # `.venv/bin/python -m unittest` it is the system one, which has neither module.
+    #
+    # The opendbc: this fork's `board/main.c` includes the forked safety layer, which the opendbc that
+    # panda's own venv installs does not carry -- and `SConscript` reads its include path from an
+    # `import opendbc` of its own, so an environment variable cannot reach it. `PYTHONPATH` can, and it
+    # has to be absolute: the child changes directory, so a relative one stops resolving. Whatever
+    # opendbc this test run imported is the one panda is being checked against.
+    import opendbc
+    env = os.environ | {"PATH": os.path.dirname(sys.executable) + os.pathsep + os.environ["PATH"],
+                        "PYTHONPATH": opendbc.INCLUDE_PATH + os.pathsep + os.environ.get("PYTHONPATH", "")}
+    return subprocess.run("SKIP_TABLES_DIFF=1 panda/tests/misra/test_misra.sh", cwd=tmp, shell=True, env=env,
                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
 
