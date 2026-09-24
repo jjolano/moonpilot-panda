@@ -13,9 +13,9 @@ Three things. `HEALTH_FLAG_CONTROLS_ALLOWED_LATERAL` in `board/health.h`, publis
 ## The invariants
 
 - **`board/health.h` is three contracts at once**, which is why it is not a local edit. `health_t` is compiled into the firmware (`board/main.c`, `board/drivers/drivers.h`, `board/body/can.h`) *and* into openpilot's host side, through upstream's own `openpilot/selfdrive/pandad/panda.h` and `openpilot/tools/cabana/panda.h` — so a macro added here has to compile on both. panda's python parses the struct **out of the source text** by name (`_parse_c_struct(… "health_t")` in `python/__init__.py`) and hashes the file into `HEALTH_PACKET_VERSION`, and `SConscript` hashes it into the firmware's own version. Adding a flag is fine; moving a field, renaming the struct, or changing a field's type or width is not.
-- **`flags_pkt` is `uint16_t` and bits 0–6 are upstream's.** The fork's bit is `1U << 7`. Do not renumber an existing one, and do not widen the field to make room — openpilot parses this packet, so a wider field silently misaligns everything after it.
+- **`flags_pkt` is `uint16_t` and bits 0–8 are upstream's** (0–6 the original flags, 7 NMI reset, 8 hardfault reset). The fork's bit is `1U << 9`. Do not renumber an existing one, and do not widen the field to make room — openpilot parses this packet, so a wider field silently misaligns everything after it.
 - **This tree mirrors the permission, it does not decide it.** `controls_allowed_lateral` is set by the forked safety layer in `moonpilot-opendbc`, which panda compiles into the firmware (`board/main.c` includes `opendbc/safety/safety.h`). Re-deriving an engagement rule here would be a second authority for one safety decision, which is what the fork avoids.
-- `python/__init__.py` deliberately does not name the new bit: that list is what `panda.health()` decodes for PC-side tools, and nothing reads bit 7 that way. Add it there only when a host-side tool wants it.
+- `python/__init__.py` deliberately does not name the new bit: that list is what `panda.health()` decodes for PC-side tools, and nothing reads bit 9 that way. Add it there only when a host-side tool wants it.
 
 ## Gates
 

@@ -7,7 +7,9 @@
 #define HEALTH_FLAG_HEARTBEAT_LOST           (1U << 4)
 #define HEALTH_FLAG_SAFETY_RX_CHECKS_INVALID (1U << 5)
 #define HEALTH_FLAG_SOM_RESET_TRIGGERED      (1U << 6)
-#define HEALTH_FLAG_CONTROLS_ALLOWED_LATERAL (1U << 7)  // moonpilot seam, see AGENTS.md
+#define HEALTH_FLAG_NMI_RESET                (1U << 7)
+#define HEALTH_FLAG_HARDFAULT_RESET          ((uint16_t)1U << 8)
+#define HEALTH_FLAG_CONTROLS_ALLOWED_LATERAL (1U << 9)  // moonpilot seam, see AGENTS.md
 
 struct __attribute__((packed)) health_t {
   uint32_t uptime_pkt;
