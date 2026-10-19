@@ -22,6 +22,7 @@ static int get_health_pkt(void *dat) {
   health->flags_pkt |= heartbeat_lost ? HEALTH_FLAG_HEARTBEAT_LOST : 0U;
   health->flags_pkt |= safety_rx_checks_invalid ? HEALTH_FLAG_SAFETY_RX_CHECKS_INVALID : 0U;
   health->flags_pkt |= bootkick_reset_triggered ? HEALTH_FLAG_SOM_RESET_TRIGGERED : 0U;
+  health->flags_pkt |= heartbeat_disabled ? HEALTH_FLAG_HEARTBEAT_DISABLED : 0U;
   health->flags_pkt |= reset_flags;
   health->flags_pkt |= controls_allowed_lateral ? HEALTH_FLAG_CONTROLS_ALLOWED_LATERAL : 0U;  // moonpilot seam, see AGENTS.md
 
@@ -279,6 +280,7 @@ int comms_control_handler(ControlPacket_t *req, uint8_t *resp) {
     case 0xf3:
       {
         heartbeat_counter = 0U;
+        heartbeat_tick_counter = 0U;
         heartbeat_lost = false;
         heartbeat_disabled = false;
         heartbeat_engaged = (req->param1 == 1U);
